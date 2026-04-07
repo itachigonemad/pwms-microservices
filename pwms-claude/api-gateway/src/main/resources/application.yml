@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+
+        # ── Auth service — PUBLIC, no token needed ──────────
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+
+        # ── Patient service ─────────────────────────────────
+        - id: patient-service
+          uri: lb://patient-service
+          predicates:
+            - Path=/api/patients/**
+          filters:
+            - name: JwtAuthFilter
+
+        # ── Wellness plan service ────────────────────────────
+        - id: wellnessplan-service
+          uri: lb://wellnessplan-service
+          predicates:
+            - Path=/api/plans/**
+          filters:
+            - name: JwtAuthFilter
+
+        # ── Progress service ─────────────────────────────────
+        - id: progress-service
+          uri: lb://progress-service
+          predicates:
+            - Path=/api/progress/**
+          filters:
+            - name: JwtAuthFilter
+
+        # ── Notification service ─────────────────────────────
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - name: JwtAuthFilter
+
+        # ── Report service ───────────────────────────────────
+        - id: report-service
+          uri: lb://report-service
+          predicates:
+            - Path=/api/reports/**
+          filters:
+            - name: JwtAuthFilter
+
+server:
+  port: 8090
+
+# ── Eureka ──────────────────────────────────────────────────
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# ── JWT secret — must match auth-service exactly ────────────
+jwt:
+  secret: pwms-secret-key-for-jwt-signing-2026
+
+# ── Logging ─────────────────────────────────────────────────
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.pwms.gateway: DEBUG
